@@ -455,7 +455,7 @@ services:
         - DOCKER_CERT_PATH=/certs/client
         - FAKETIME=${PHP_FPM_FAKETIME}
       depends_on:
-        - workspace-php7
+        - workspace
       networks:
         - backend
       links:
@@ -561,7 +561,7 @@ services:
         - DOCKER_CERT_PATH=/certs/client
         - FAKETIME=${PHP_FPM_FAKETIME}
       depends_on:
-        - workspace
+        - workspace-php7
       networks:
         - backend
       links:
