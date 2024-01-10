@@ -178,6 +178,7 @@ services:
           - INSTALL_EVENT=${WORKSPACE_INSTALL_EVENT}
           - INSTALL_DNSUTILS=${WORKSPACE_INSTALL_DNSUTILS}
           - INSTALL_POPPLER_UTILS=${WORKSPACE_INSTALL_POPPLER_UTILS}
+          - INSTALL_JDK=${WORKSPACE_INSTALL_JDK}
           - http_proxy
           - https_proxy
           - no_proxy
@@ -421,7 +422,7 @@ services:
           - INSTALL_FFMPEG=${PHP_FPM_FFMPEG}
           - INSTALL_AUDIOWAVEFORM=${PHP_FPM_AUDIOWAVEFORM}
           - INSTALL_WKHTMLTOPDF=${PHP_FPM_INSTALL_WKHTMLTOPDF}
-          - WKHTMLTOPDF_VERSION=${WORKSPACE_WKHTMLTOPDF_VERSION}
+          - WKHTMLTOPDF_VERSION=${PHP_FPM_WKHTMLTOPDF_VERSION}
           - INSTALL_XHPROF=${PHP_FPM_INSTALL_XHPROF}
           - INSTALL_XMLRPC=${PHP_FPM_INSTALL_XMLRPC}
           - INSTALL_PHPDECIMAL=${PHP_FPM_INSTALL_PHPDECIMAL}
@@ -429,19 +430,19 @@ services:
           - INSTALL_SSDB=${PHP_FPM_INSTALL_SSDB}
           - INSTALL_TRADER=${PHP_FPM_INSTALL_TRADER}
           - INSTALL_EVENT=${PHP_FPM_INSTALL_EVENT}
+          - LEGACY_OPENSSL=${PHP_LEGACY_OPENSSL}
           - DOWNGRADE_OPENSSL_TLS_AND_SECLEVEL=${PHP_DOWNGRADE_OPENSSL_TLS_AND_SECLEVEL}
           - DOWNGRADE_OPENSSL_TLS_VERSION=${PHP_DOWNGRADE_OPENSSL_TLS_VERSION}
           - PUID=${PHP_FPM_PUID}
           - PGID=${PHP_FPM_PGID}
           - IMAGEMAGICK_VERSION=${PHP_FPM_IMAGEMAGICK_VERSION}
           - LOCALE=${PHP_FPM_DEFAULT_LOCALE}
-          - PHP_FPM_NEW_RELIC=${PHP_FPM_NEW_RELIC}
-          - PHP_FPM_NEW_RELIC_KEY=${PHP_FPM_NEW_RELIC_KEY}
-          - PHP_FPM_NEW_RELIC_APP_NAME=${PHP_FPM_NEW_RELIC_APP_NAME}
+          - NEW_RELIC=${PHP_FPM_NEW_RELIC}
+          - NEW_RELIC_KEY=${PHP_FPM_NEW_RELIC_KEY}
+          - NEW_RELIC_APP_NAME=${PHP_FPM_NEW_RELIC_APP_NAME}
           - INSTALL_DOCKER_CLIENT=${PHP_FPM_INSTALL_DOCKER_CLIENT}
           - INSTALL_DNSUTILS=${PHP_FPM_INSTALL_DNSUTILS}
           - INSTALL_POPPLER_UTILS=${PHP_FPM_INSTALL_POPPLER_UTILS}
-          - INSTALL_JDK=${WORKSPACE_INSTALL_JDK}
           - http_proxy
           - https_proxy
           - no_proxy
@@ -668,6 +669,8 @@ services:
     soketi:
       build:
         context: ./soketi
+      volumes:
+        - ./soketi/config.json:/app/bin/config.json:ro
       ports:
         - "${SOKETI_PORT}:6001"
         - "${SOKETI_METRICS_SERVER_PORT}:9601"
@@ -700,6 +703,8 @@ services:
       networks:
         - frontend
         - backend
+      extra_hosts:
+        - "host.docker.internal:host-gateway"  
 
 ### OpenResty Server #########################################
     openresty:
@@ -905,6 +910,22 @@ services:
         - POSTGRES_CONFLUENCE_PASSWORD=${CONFLUENCE_POSTGRES_PASSWORD}
       networks:
         - backend
+### pgbackups PostgreSQL ###########################################
+    pgbackups:
+      image: prodrigestivill/postgres-backup-local
+      restart: always
+      volumes:
+        - ../backup:/backups
+      links:
+        - postgres
+      environment:
+        - POSTGRES_HOST={POSTGRES_HOST}
+        - POSTGRES_DB=${POSTGRES_DB}
+        - POSTGRES_USER=${POSTGRES_USER}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      networks:
+        - backend
+
 
 ### PostgreSQL PostGis ###################################
     postgres-postgis:
@@ -1256,8 +1277,8 @@ services:
           - ADMINER_DEFAULT_SERVER=${ADM_DEFAULT_SERVER}
       ports:
         - "${ADM_PORT}:8080"
-      depends_on:
-        - php-fpm
+      # depends_on:
+      #   - php-fpm
       networks:
         - frontend
         - backend
@@ -1285,6 +1306,8 @@ services:
         - ${DATA_PATH_HOST}/meilisearch:/data.ms
       ports:
         - "${MEILISEARCH_HOST_PORT}:7700"
+      environment:
+        - MEILI_MASTER_KEY=${MEILISEARCH_KEY}
       networks:
         - frontend
         - backend
