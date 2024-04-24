@@ -179,6 +179,7 @@ services:
           - INSTALL_DNSUTILS=${WORKSPACE_INSTALL_DNSUTILS}
           - INSTALL_POPPLER_UTILS=${WORKSPACE_INSTALL_POPPLER_UTILS}
           - INSTALL_JDK=${WORKSPACE_INSTALL_JDK}
+          - INSTALL_GITHUB_CLI=${WORKSPACE_INSTALL_GITHUB_CLI}
           - http_proxy
           - https_proxy
           - no_proxy
@@ -669,6 +670,9 @@ services:
     soketi:
       build:
         context: ./soketi
+        args:
+          - NODE_VERSION=${SOKETI_NODE_VERSION}
+          - BASE_IMAGE_TAG_PREFIX=${SOKETI_BASE_IMAGE_TAG_PREFIX}
       volumes:
         - ./soketi/config.json:/app/bin/config.json:ro
       ports:
