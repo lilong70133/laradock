@@ -769,7 +769,7 @@ RUN set -eux; \
       ;else \
         curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
       ;fi \
-      && curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list > /etc/apt/sources.list.d/mssql-release.list \ 
+      && curl https://packages.microsoft.com/config/debian/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list \
       && apt-get update -yqq \
       && ACCEPT_EULA=Y apt-get install -yqq unixodbc unixodbc-dev libgss3 odbcinst msodbcsql18 locales \
       && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
