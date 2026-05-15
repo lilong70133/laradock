@@ -62,6 +62,8 @@ services:
         context: ./workspace
         args:
           - CHANGE_SOURCE=${CHANGE_SOURCE}
+          - http_proxy=http://host.docker.internal:7080
+          - https_proxy=http://host.docker.internal:7080
           - SHELL_OH_MY_ZSH=${SHELL_OH_MY_ZSH}
           - SHELL_OH_MY_ZSH_AUTOSUGESTIONS=${SHELL_OH_MY_ZSH_AUTOSUGESTIONS}
           - SHELL_OH_MY_ZSH_ALIASES=${SHELL_OH_MY_ZSH_ALIASES}
@@ -367,6 +369,8 @@ services:
         context: ./php-fpm
         args:
           - CHANGE_SOURCE=${CHANGE_SOURCE}
+          - http_proxy=http://host.docker.internal:7080
+          - https_proxy=http://host.docker.internal:7080
           - BASE_IMAGE_TAG_PREFIX=${PHP_FPM_BASE_IMAGE_TAG_PREFIX}
           - LARADOCK_PHP_VERSION=${PHP_VERSION}
           - LARADOCK_PHALCON_VERSION=${PHALCON_VERSION}
@@ -488,6 +492,8 @@ services:
         args:
           - CHANGE_SOURCE=${CHANGE_SOURCE}
           - BASE_IMAGE_TAG_PREFIX=${PHP_FPM_BASE_IMAGE_TAG_PREFIX}
+          - http_proxy=http://host.docker.internal:7080
+          - https_proxy=http://host.docker.internal:7080
           - LARADOCK_PHP_VERSION=${PHP7_VERSION}
           - LARADOCK_PHALCON_VERSION=${PHALCON_VERSION}
           - INSTALL_BZ2=${PHP_FPM_INSTALL_BZ2}
@@ -514,7 +520,7 @@ services:
           - INSTALL_OPCACHE=${PHP_FPM_INSTALL_OPCACHE}
           - INSTALL_EXIF=${PHP_FPM_INSTALL_EXIF}
           - INSTALL_AEROSPIKE=${PHP_FPM_INSTALL_AEROSPIKE}
-          - INSTALL_OCI8=${PHP_FPM_INSTALL_OCI8}
+          - INSTALL_OCI8=true
           - INSTALL_MYSQLI=${PHP_FPM_INSTALL_MYSQLI}
           - INSTALL_PGSQL=${PHP_FPM_INSTALL_PGSQL}
           - INSTALL_PG_CLIENT=${PHP_FPM_INSTALL_PG_CLIENT}
@@ -523,7 +529,7 @@ services:
           - INSTALL_GHOSTSCRIPT=${PHP_FPM_INSTALL_GHOSTSCRIPT}
           - INSTALL_LDAP=${PHP_FPM_INSTALL_LDAP}
           - INSTALL_PHALCON=${PHP_FPM_INSTALL_PHALCON}
-          - INSTALL_SWOOLE=${PHP_FPM_INSTALL_SWOOLE}
+          - INSTALL_SWOOLE=${PHP7_FPM_INSTALL_SWOOLE}
           - INSTALL_TAINT=${PHP_FPM_INSTALL_TAINT}
           - INSTALL_IMAGE_OPTIMIZERS=${PHP_FPM_INSTALL_IMAGE_OPTIMIZERS}
           - INSTALL_IMAGEMAGICK=${PHP_FPM_INSTALL_IMAGEMAGICK}
@@ -565,7 +571,7 @@ services:
           - https_proxy
           - no_proxy
       volumes:
-        - ./php-fpm/php${PHP_VERSION}.ini:/usr/local/etc/php/php.ini
+        - ./php-fpm/php${PHP7_VERSION}.ini:/usr/local/etc/php/php.ini
         - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
         - docker-in-docker:/certs/client
       ports:

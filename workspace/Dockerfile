@@ -19,6 +19,9 @@ FROM laradock/workspace:${BASE_IMAGE_TAG_PREFIX}-${LARADOCK_PHP_VERSION}
 LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
 
 ARG LARADOCK_PHP_VERSION
+ARG http_proxy
+ARG https_proxy
+ARG no_proxy
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
@@ -992,6 +995,7 @@ RUN if [ ${INSTALL_OCI8} = true ]; then \
   # Install PHP extensions deps
   && apt-get update \
       && apt-get install --no-install-recommends -y \
+          $(apt-cache show libaio1t64 >/dev/null 2>&1 && echo libaio1t64 || echo libaio1) \
           libaio-dev && \
   # Install PHP extensions
   if [ $(php -r "echo PHP_MAJOR_VERSION;") = "5" ]; then \

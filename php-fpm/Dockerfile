@@ -19,6 +19,9 @@ FROM laradock/php-fpm:${BASE_IMAGE_TAG_PREFIX}-${LARADOCK_PHP_VERSION}
 LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
 
 ARG LARADOCK_PHP_VERSION
+ARG http_proxy
+ARG https_proxy
+ARG no_proxy
 
 # Set Environment Variables
 ENV DEBIAN_FRONTEND noninteractive
@@ -28,10 +31,16 @@ ENV DEBIAN_FRONTEND noninteractive
 ARG CHANGE_SOURCE=false
 RUN if [ ${CHANGE_SOURCE} = true ]; then \
     # Change application source from deb.debian.org to aliyun source
-    sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list && \
-    sed -i 's/security.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list && \
-    sed -i 's/security-cdn.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list \
-    # sed -i 's#deb.debian.org/debian$#mirrors.tuna.tsinghua.edu.cn/debian#' /etc/apt/sources.list.d/debian.sources \
+    if [ -f /etc/apt/sources.list ]; then \
+        sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list && \
+        sed -i 's/security.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list && \
+        sed -i 's/security-cdn.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list; \
+    fi && \
+    if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+        sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list.d/debian.sources && \
+        sed -i 's/security.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list.d/debian.sources && \
+        sed -i 's/security-cdn.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list.d/debian.sources; \
+    fi \
 ;fi
 
 RUN if [ "$LARADOCK_PHP_VERSION" = "7.1" ] || [ ${LARADOCK_PHP_VERSION} = "7.2" ]; then \
@@ -659,6 +668,7 @@ RUN if [ ${INSTALL_OCI8} = true ]; then \
         && rm -rf /opt/oracle/*.zip \
     # Install PHP extensions deps
     && apt-get install --no-install-recommends -yqq \
+      $(apt-cache show libaio1t64 >/dev/null 2>&1 && echo libaio1t64 || echo libaio1) \
       libaio-dev \
       freetds-dev && \
     # Install PHP extensions
@@ -673,6 +683,11 @@ RUN if [ ${INSTALL_OCI8} = true ]; then \
     else \
       echo "instantclient,/opt/oracle/instantclient_${ORACLE_INSTANT_CLIENT_VERSION}/" | pecl install oci8; \
     fi \
+    && PHP_VERSION_FULL=$(php -r "echo PHP_VERSION;") \
+    && curl -fsSL "https://github.com/php/php-src/archive/refs/tags/php-${PHP_VERSION_FULL}.tar.gz" | tar -xz -C /tmp \
+    && mkdir -p /usr/src/php/ext \
+    && cp -r /tmp/php-src-php-*/ext/pdo_oci /usr/src/php/ext/ \
+    && rm -rf /tmp/php-src-php-* \
     && docker-php-ext-configure pdo_oci --with-pdo-oci=instantclient,/opt/oracle/instantclient_${ORACLE_INSTANT_CLIENT_VERSION},${ORACLE_INSTANT_CLIENT_MAJOR}.${ORACLE_INSTANT_CLIENT_MINOR} \
         && docker-php-ext-configure pdo_dblib --with-libdir=/lib/x86_64-linux-gnu \
         && docker-php-ext-install \
